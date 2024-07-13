@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YouTube Video Summarizer</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container mt-5">
+        <h1 class="text-center">YouTube Video Summarizer</h1>
+        <form id="summarizeForm">
+            <div class="form-group">
+                <label for="videoUrl">YouTube Video URL</label>
+                <input type="text" class="form-control" id="videoUrl" placeholder="Enter YouTube video URL">
+            </div>
+            <button type="button" class="btn btn-primary" onclick="summarizeVideo()">Summarize</button>
+        </form>
+        <div id="summary" class="mt-5"></div>
+        <div id="error" class="mt-5 text-danger"></div>
+    </div>
+
+    <script>
+        function summarizeVideo() {
+            const videoUrl = document.getElementById('videoUrl').value;
+            fetch('/summarize/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: JSON.stringify({ video_url: videoUrl })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    document.getElementById('error').textContent = data.error;
+                } else {
+                    document.getElementById('summary').innerHTML = `
+                        <h3>Summary in Original Language</h3>
+                        <p>${data.summary_original}</p>
+                        <h3>Summary in English</h3>
+                        <p>${data.summary_english}</p>
+                    `;
+                    document.getElementById('error').textContent = '';
+                }
+            })
+            .catch(error => {
+                document.getElementById('error').textContent = 'An error occurred while processing the request.';
+            });
+        }
+    </script>
+</body>
+</html>
